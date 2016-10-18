@@ -23,7 +23,8 @@ class Source(Base):
         self.debug_enabled = True
         self.name = "typescript"
         self.mark = "TS"
-        self.filetypes = ["typescript", "tsx", "typescript.tsx", "javascript", "jsx", "javascript.jsx"] if vim.vars["deoplete#sources#tss#javascript_support"] else ["typescript"]
+        self.filetypes = ["typescript", "tsx", "typescript.tsx", "javascript", "jsx", "javascript.jsx"] if vim.vars[
+            "deoplete#sources#tss#javascript_support"] else ["typescript"]
         self.rank = 700
         self.input_pattern = r'\.\w*'
         self._last_input_reload = time()
@@ -38,14 +39,13 @@ class Source(Base):
         self.debug('startig')
         self._tsserver_handle = subprocess.Popen("tsserver",
                                                  env=self._environ,
-                                                 cwd=self._project_directory,
                                                  stdout=subprocess.PIPE,
                                                  stdin=subprocess.PIPE,
                                                  stderr=subprocess.STDOUT,
                                                  universal_newlines=True,
                                                  shell=True,
                                                  bufsize=1)
-        self.vim.command('echom "Deoplete-Typescript: Server Started"')
+        self.vim.out_write('Deoplete-Typescript: Server Started \n')
 
     def search_tss_project_dir(self, context):
         self._project_directory = context['cwd']
@@ -75,7 +75,8 @@ class Source(Base):
                 if "Content-Length" not in headers:
                     raise RuntimeError("Missing 'Content-Length' header")
                 contentlength = int(headers["Content-Length"])
-                ret = json.loads(self._tsserver_handle.stdout.read(contentlength))
+                ret = json.loads(
+                    self._tsserver_handle.stdout.read(contentlength))
                 if ret['request_seq'] == seq:
                     return ret
                 elif ret['request_seq'] > seq:
@@ -116,14 +117,15 @@ class Source(Base):
         return m.start() if m else -1
 
     def gather_candidates(self, context):
-        # reload if last reload expired or input completion is a method extraction
+        # reload if last reload expired or input completion is a method
+        # extraction
         if time() - self._last_input_reload > RELOAD_INTERVAL or re.search(r"\w*\.", context["input"]):
             self._last_input_reload = time()
             self._reload()
         data = self._sendReuest("completions", {
             "file":   self.relative_file(),
             "line":   context["position"][1],
-            "offset": context["complete_position"] + 1,
+            "offset": context["complete_position"] + 2,
             "prefix": context["complete_str"]
         }, wait_for_response=True)
 
@@ -164,7 +166,6 @@ class Source(Base):
         }
 
     def _convert_detailed_completion_data(self, entry, padding=80):
-        # self.debug(entry)
 
         name = entry["name"]
         display_parts = entry['displayParts']

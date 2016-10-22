@@ -75,12 +75,11 @@ class Source(Base):
                 if "Content-Length" not in headers:
                     raise RuntimeError("Missing 'Content-Length' header")
                 contentlength = int(headers["Content-Length"])
-                ret = json.loads(
-                    self._tsserver_handle.stdout.read(contentlength))
-                if ret['request_seq'] == seq:
-                    return ret
-                elif ret['request_seq'] > seq:
+                ret = json.loads(self._tsserver_handle.stdout.read(contentlength))
+                if 'request_seq' not in ret or ret['request_seq'] > seq:
                     return None
+                elif ret['request_seq'] == seq:
+                    return ret
 
     def _write_message(self, message):
         self._tsserver_handle.stdin.write(json.dumps(message))
@@ -172,11 +171,11 @@ class Source(Base):
         signature = ''.join([p['text'] for p in display_parts])
 
         # needed to strip new lines and indentation from the signature
-        signature = re.sub('\s+', '', signature)
-        menu_text = re.sub('^\(method\)|^\(property\)', '', signature)
+        signature = re.sub('\s+', ' ', signature)
+        menu_text = re.sub('^(var|let|const|class|\(method\)|\(property\)|enum|namespace|function|import|interface|type)\s+', '', signature)
         documentation = menu_text
-        if "documentation" in entry and entry["documentation"]:
-            documentation += "\n" + entry["documentation"][0]["text"]
+        if 'documentation' in entry and entry['documentation']:
+            documentation += '\n' + ''.join([d['text'] for d in entry['documentation']])
 
         kind = entry["kind"][0].title()
         return ({

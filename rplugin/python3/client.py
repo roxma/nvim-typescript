@@ -196,3 +196,21 @@ class Client:
         response = self.send_request("completionEntryDetails", args, wait_for_response=True)
 
         return self.__get_response_body(response)
+
+    def signature_help(self, file, line, offset):
+        """
+            Sends a "signatureHelp" request
+
+            :type file: string
+            :type line: int
+            :type offset: int
+        """
+        args = {
+            "file": file,
+            "line": line,
+            "offset": offset
+        }
+
+        response = self.send_request("signatureHelp", args, wait_for_response=True)
+
+        return self.__get_response_body(response, default=None)

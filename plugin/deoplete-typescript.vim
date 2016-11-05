@@ -9,3 +9,6 @@ let g:deoplete#sources#tss#javascript_support =
 
 let g:deoplete#sources#tss#max_completion_detail =
       \ get(g:, 'deoplete#sources#tss#max_completion_detail', 25)
+
+let g:deoplete#sources#tss#enable_auto_signature_preview =
+      \ get(g:, 'deoplete#sources#tss#enable_auto_signature_preview', 0)

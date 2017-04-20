@@ -27,9 +27,12 @@ class Source(Base):
         self.name = "typescript"
         self.mark = "TS"
         self.filetypes = ["typescript", "tsx", "typescript.tsx", "javascript", "jsx", "javascript.jsx"] if self.vim.vars[
-            "nvim_typescript#javascript_support"] else ["typescript", "tsx", "typescript.tsx"]
+            "nvim_typescript#javascript_support"] else ["typescript", "tsx", "typescript.tsx", "html"]
         self.rank = 1000
         self.input_pattern = r"\.\w*"
+        # self.input_pattern = (r'\.\w*'
+        #                       r'\*\w*'
+        #                       r'^\s*import\s+(?:[\w\.]*(?:,\s*)?)*')
         self._last_input_reload = time()
         # pylint: disable=locally-disabled, line-too-long
         self._max_completion_detail = self.vim.eval(
@@ -43,7 +46,7 @@ class Source(Base):
         Log message to vim echo
         """
         self.debug('************')
-        self.debug(message)
+        self.vim.out_write(str(message)+'\n')
         self.debug('************')
 
     def reload(self):
@@ -83,11 +86,10 @@ class Source(Base):
         # pylint: disable=locally-disabled, line-too-long
         try:
 
-
             if time() - self._last_input_reload > RELOAD_INTERVAL or re.search(r"\w*\.", context["input"]):
                 self._last_input_reload = time()
                 self.reload()
-
+            # self.log(context["complete_str"])
             data = self._client.completions(
                 file=self.relative_file(),
                 line=context["position"][1],
@@ -95,6 +97,7 @@ class Source(Base):
                 prefix=context["complete_str"]
             )
 
+            # self.log(data)
             if len(data) == 0:
                 return []
 

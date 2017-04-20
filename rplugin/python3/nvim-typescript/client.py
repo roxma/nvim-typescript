@@ -3,6 +3,12 @@ import json
 import subprocess
 from numbers import Number
 
+"""
+API references, cus I always forget
+https://github.com/Microsoft/TypeScript/blob/master/src/server/protocol.ts
+"""
+
+
 class Client:
     __server_handle = None
     __server_seq = 1
@@ -46,7 +52,6 @@ class Client:
         """
         if Client.__server_handle:
             return
-
         Client.__server_handle = subprocess.Popen(
             self.getServer(),
             env=Client.__environ,
@@ -59,7 +64,7 @@ class Client:
             bufsize=1
         )
 
-        self.__log("TSServer started")
+        # self.__log("TSServer started")
         return True
 
     def restart(self):
@@ -132,6 +137,7 @@ class Client:
                     contentlength)
 
                 ret = json.loads(returned_string)
+                # self.__log(ret)
                 # Each response should contain a "request_seq"
                 # TS 2.0.6 introduces configFileDiag event, ignore
                 if ("event", "configFileDiag") in ret.items():
@@ -240,7 +246,7 @@ class Client:
         response = self.send_request("definition", args, True)
         return response
 
-    def renameSymbol(self, file, line, offset):
+    def renameSymbol(self, newName, file, line, offset):
         args = {"file": file, "line": line, "offset": offset,
                 'findInComments': True, 'findInStrings': True}
         response = self.send_request("rename", args, True)

@@ -105,7 +105,6 @@ class Client(object):
         while True:
             headerline = Client.server_handle.stdout.readline().strip()
             Client.server_handle.stdin.flush()
-            logger.debug(headerline)
             linecount += 1
 
             if len(headerline):

@@ -12,6 +12,8 @@ sys.path.insert(1, os.path.dirname(__file__) + '/../../nvim-typescript')
 
 from client import Client
 
+from utils import get_kind
+
 RELOAD_INTERVAL = 1
 RESPONSE_TIMEOUT_SECONDS = 20
 
@@ -46,7 +48,7 @@ class Source(Base):
         Log message to vim echo
         """
         self.debug('************')
-        self.vim.out_write(str(message))
+        self.debug(str(message))
         self.debug('************')
 
     def reload(self):
@@ -84,7 +86,6 @@ class Source(Base):
         """
         # reload if last reload expired or input completion is a method extraction
         # pylint: disable=locally-disabled, line-too-long
-
         try:
 
             if time() - self._last_input_reload > RELOAD_INTERVAL or re.search(r"\w*\.", context["input"]):
@@ -97,7 +98,7 @@ class Source(Base):
                 offset=context["complete_position"] + 1,
                 prefix=context["complete_str"]
             )
-            # self.log(data)
+            self.log(data)
             if len(data) == 0:
                 return []
 
@@ -153,7 +154,8 @@ class Source(Base):
             documentation += "\n" + \
                 "".join([d["text"] for d in entry["documentation"]])
 
-        kind = entry["kind"][0].title()
+        kind = get_kind(self.vim, entry['kind'])
+        kind = kind[0].title()
 
         return ({
             "word": name,

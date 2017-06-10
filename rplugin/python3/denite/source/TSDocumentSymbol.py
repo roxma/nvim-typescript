@@ -1,7 +1,14 @@
 #! /usr/bin/env python3
+import sys
+from os import path
+sys.path.insert(1, path.dirname(__file__) + '/../../nvim-typescript')
+
+from client import Client
+from utils import get_kind
 from operator import itemgetter
 
 from .base import Base
+
 
 class Source(Base):
 
@@ -10,19 +17,14 @@ class Source(Base):
 
         self.name = 'TSDocumentSymbol'
         self.kind = 'file'
-
-    def get_kind(self, kind):
-        if kind in self.vim.vars["nvim_typescript#kind_symbols"].keys():
-            return self.vim.vars["nvim_typescript#kind_symbols"][kind]
-        else:
-            return kind
+        self._client = Client()
 
     def convertToCandidate(self, symbols):
         candidates = []
         for symbol in symbols['body']['childItems']:
             candidates.append({
                 'text':  symbol['text'],
-                'kindIcon': self.get_kind(symbol['kind']),
+                'kindIcon': get_kind(self.vim, symbol['kind']),
                 'lnum':  symbol['spans'][0]['start']['line'],
                 'col':  symbol['spans'][0]['start']['offset']
             })
@@ -30,7 +32,7 @@ class Source(Base):
                 for childSymbol in symbol['childItems']:
                     candidates.append({
                         'text': childSymbol['text'] + ' - ' + symbol['text'],
-                        'kindIcon': self.get_kind(childSymbol['kind']),
+                        'kindIcon': get_kind(self.vim, childSymbol['kind']),
                         'lnum': childSymbol['spans'][0]['start']['line'],
                         'col': childSymbol['spans'][0]['start']['offset']
                     })
@@ -38,7 +40,7 @@ class Source(Base):
 
     def gather_candidates(self, context):
         context['is_interactive	'] = True
-        symbols = self.vim.call('TSGetDocSymbolsFunc')
+        symbols = self._client.getDocumentSymbols(self.vim.current.buffer.name)
         if symbols is None:
             return []
         bufname = self.vim.current.buffer.name

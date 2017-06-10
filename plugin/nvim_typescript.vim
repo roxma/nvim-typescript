@@ -5,6 +5,22 @@ let g:nvim_typescript#loaded = 1
 let g:nvim_typescript#ts_version = 'typescript@2.3.0'
 let g:nvim_typescript#version = '1.2.0'
 
+function! s:is_initialized() abort "{{{
+  return exists('g:nvim_typescript#channel_id')
+endfunction "}}}
+
+function! nvim_typescript#init() abort "{{{
+  if s:is_initialized()
+    return
+  endif
+  if !exists('g:loaded_remote_plugins')
+    runtime! plugin/rplugin.vim
+  endif
+  call _nvim_typescript_init()
+endfunction "}}}
+
+call nvim_typescript#init()
+
 let g:nvim_typescript#javascript_support =
       \ get(g:, 'nvim_typescript#javascript_support', 0)
 let g:nvim_typescript#server_path =

@@ -7,7 +7,6 @@ from time import time
 from tempfile import NamedTemporaryFile
 sys.path.insert(1, os.path.dirname(__file__))
 from client import Client
-from dir import Dir
 RELOAD_INTERVAL = 1
 
 """
@@ -35,7 +34,6 @@ class TypescriptHost(object):
     def __init__(self, vim):
         self.vim = vim
         self._client = Client(debug_fn=self.log, log_fn=self.log)
-        self.files = Dir()
         self._last_input_reload = time()
         self.cwd = os.getcwd()
 
@@ -73,11 +71,7 @@ class TypescriptHost(object):
 
     @neovim.function("TSFindConfig", sync=True)
     def findconfig(self, args):
-        files = self.files.files()
-        m = re.compile(r'(ts|js)config.json$')
-        for file in files:
-            if m.search(file):
-                return True
+        return os.path.isfile('%s/tsconfig.json' % self.cwd) or os.path.isfile('%s/jsconfig.json' % self.cwd)
 
     def writeFile(self):
         jsSupport = self.vim.eval('g:nvim_typescript#javascript_support')
